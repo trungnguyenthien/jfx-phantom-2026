@@ -44,9 +44,6 @@ dependencies {
     }
     implementation("org.kordamp.ikonli:ikonli-javafx:12.3.1")
     implementation("org.kordamp.bootstrapfx:bootstrapfx-core:0.4.0")
-    implementation("eu.hansolo:tilesfx:21.0.9") {
-        exclude(group = "org.openjfx")
-    }
     implementation("com.github.almasb:fxgl:17.3") {
         exclude(group = "org.openjfx")
         exclude(group = "org.jetbrains.kotlin")
