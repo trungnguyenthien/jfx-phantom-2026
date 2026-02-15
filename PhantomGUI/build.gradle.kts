@@ -35,6 +35,8 @@ javafx {
 }
 
 dependencies {
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-javafx:1.8.0")
     implementation("org.controlsfx:controlsfx:11.2.1")
     implementation("com.dlsc.formsfx:formsfx-core:11.6.0") {
         exclude(group = "org.openjfx")
