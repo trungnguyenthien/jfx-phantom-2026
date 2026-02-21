@@ -3,6 +3,7 @@ module vn.ntrung.phantomgui {
     requires javafx.fxml;
     requires javafx.web;
     requires kotlin.stdlib;
+    requires kotlinx.coroutines.core;
 
     requires org.controlsfx.controls;
     requires com.dlsc.formsfx;

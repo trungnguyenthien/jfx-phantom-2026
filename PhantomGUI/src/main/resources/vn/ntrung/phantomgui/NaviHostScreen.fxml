@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox prefHeight="600.0" prefWidth="800.0"
+      xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="vn.ntrung.phantomgui.screen.NaviHostScreen"
+      style="-fx-background-color: white;">
+
+    <BorderPane style="-fx-border-color: #cccccc; -fx-border-width: 0 0 1 0; -fx-padding: 8;">
+
+        <left>
+            <HBox alignment="CENTER_LEFT" spacing="8.0" BorderPane.alignment="CENTER">
+                <Button fx:id="btnMenu" prefHeight="35.0" prefWidth="40.0" text="≡" style="-fx-font-size: 16px; -fx-cursor: hand;"/>
+                <Button fx:id="btnBack" prefHeight="35.0" prefWidth="40.0" text="&lt;" disable="true" style="-fx-font-size: 16px; -fx-cursor: hand;"/>
+            </HBox>
+        </left>
+
+        <center>
+            <Label fx:id="lblTitle" text="[PAGE TITLE]" style="-fx-font-weight: bold; -fx-font-size: 16px;" BorderPane.alignment="CENTER" />
+        </center>
+
+        <right>
+            <HBox alignment="CENTER_RIGHT" spacing="8.0" BorderPane.alignment="CENTER">
+                <Button fx:id="btnClose" prefHeight="35.0" prefWidth="40.0" text="X" style="-fx-font-size: 14px; -fx-cursor: hand;"/>
+                <Button fx:id="btnTerminal" prefHeight="35.0" prefWidth="40.0" text="&gt;_" style="-fx-font-weight: bold; -fx-cursor: hand;"/>
+            </HBox>
+        </right>
+
+    </BorderPane>
+
+    <StackPane fx:id="screenContainer" VBox.vgrow="ALWAYS" style="-fx-background-color: #5c6c7c;" />
+
+</VBox>
