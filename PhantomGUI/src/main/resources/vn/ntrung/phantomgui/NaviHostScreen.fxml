@@ -2,6 +2,8 @@
 
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
@@ -16,8 +18,25 @@
 
         <left>
             <HBox alignment="CENTER_LEFT" spacing="8.0" BorderPane.alignment="CENTER">
-                <Button fx:id="btnMenu" prefHeight="35.0" prefWidth="40.0" text="≡" style="-fx-font-size: 16px; -fx-cursor: hand;"/>
-                <Button fx:id="btnBack" prefHeight="35.0" prefWidth="40.0" text="&lt;" disable="true" style="-fx-font-size: 16px; -fx-cursor: hand;"/>
+                <Button fx:id="btnMenu" prefHeight="35.0" prefWidth="40.0" style="-fx-cursor: hand;">
+                    <graphic>
+                        <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@/assets/icons/menu.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </Button>
+
+                <Button fx:id="btnBack" disable="true" prefHeight="35.0" prefWidth="40.0" style="-fx-cursor: hand;">
+                    <graphic>
+                        <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@/assets/icons/back.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </Button>
             </HBox>
         </left>
 
@@ -27,8 +46,25 @@
 
         <right>
             <HBox alignment="CENTER_RIGHT" spacing="8.0" BorderPane.alignment="CENTER">
-                <Button fx:id="btnClose" prefHeight="35.0" prefWidth="40.0" text="X" style="-fx-font-size: 14px; -fx-cursor: hand;"/>
-                <Button fx:id="btnTerminal" prefHeight="35.0" prefWidth="40.0" text="&gt;_" style="-fx-font-weight: bold; -fx-cursor: hand;"/>
+                <Button fx:id="btnClose" prefHeight="35.0" prefWidth="40.0" style="-fx-cursor: hand;">
+                    <graphic>
+                        <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@/assets/icons/close.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </Button>
+
+                <Button fx:id="btnTerminal" prefHeight="35.0" prefWidth="40.0" style="-fx-cursor: hand;">
+                    <graphic>
+                        <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@/assets/icons/terminal.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </Button>
             </HBox>
         </right>
 
