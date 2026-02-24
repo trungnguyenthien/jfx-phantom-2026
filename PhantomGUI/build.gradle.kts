@@ -85,6 +85,20 @@ tasks.build {
     dependsOn(tasks.shadowJar)
 }
 
+// Copy toàn bộ src/main/resources/root/ ra cạnh JAR sau khi shadowJar chạy xong.
+// Đây là nơi JAR mode sẽ đọc file (RootUtils.rootDir khi chạy từ JAR).
+val copyRootFiles = tasks.register<Copy>("copyRootFiles") {
+    group = "build"
+    description = "Copy src/main/resources/root/ vào build/libs/ cạnh JAR"
+    dependsOn(tasks.shadowJar)
+    from("src/main/resources/root")
+    into(layout.buildDirectory.dir("libs"))
+}
+
+tasks.build {
+    dependsOn(copyRootFiles)
+}
+
 // Task để chạy shadow JAR
 tasks.register<JavaExec>("runJar") {
     group = "application"

@@ -1,0 +1,10 @@
+{
+  "app": "PhantomGUI",
+  "version": "1.0-SNAPSHOT",
+  "description": "File này nằm trong src/main/resources/root/ — source of truth cho debug mode.",
+  "items": [
+    { "id": 1, "name": "Item A" },
+    { "id": 2, "name": "Item B" }
+  ]
+}
+
