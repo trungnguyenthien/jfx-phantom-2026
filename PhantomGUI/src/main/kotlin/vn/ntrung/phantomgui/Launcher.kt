@@ -2,6 +2,7 @@ package vn.ntrung.phantomgui
 
 
 import javafx.application.Application
+import javafx.application.Platform
 import javafx.fxml.FXMLLoader
 import javafx.scene.Scene
 import javafx.scene.control.Button
@@ -10,8 +11,8 @@ import javafx.scene.layout.VBox
 import javafx.stage.Stage
 import vn.ntrung.phantomgui.screen.NaviHostScreen
 
-fun main() {
-    Application.launch(MainApplication::class.java)
+fun main(args: Array<String>) {
+    Application.launch(MainApplication::class.java, *args)
 }
 
 class MainApplication : Application() {
@@ -36,6 +37,16 @@ class MainApplication : Application() {
 
         primaryStage.title = "Phantom GUI"
         primaryStage.scene = scene
+
+        // 6. Xử lý sự kiện đóng window một cách an toàn
+        primaryStage.setOnCloseRequest { event ->
+            event.consume() // Ngăn đóng mặc định
+            Platform.runLater {
+                primaryStage.close()
+                Platform.exit()
+            }
+        }
+
         primaryStage.show()
     }
 
@@ -75,9 +86,4 @@ class MainApplication : Application() {
         view.children.add(lblInfo)
         return view
     }
-}
-
-// Hàm main dùng để khởi chạy app (Entry point chuẩn của JVM)
-fun main(args: Array<String>) {
-    Application.launch(MainApplication::class.java, *args)
 }

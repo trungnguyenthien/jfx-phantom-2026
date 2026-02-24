@@ -5,6 +5,7 @@ plugins {
     id("org.javamodularity.moduleplugin") version "1.8.15"
     id("org.openjfx.javafxplugin") version "0.0.13"
     id("org.beryx.jlink") version "2.25.0"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 group = "vn.ntrung"
@@ -23,7 +24,7 @@ tasks.withType<JavaCompile> {
 
 application {
     mainModule.set("vn.ntrung.phantomgui")
-    mainClass.set("vn.ntrung.phantomgui.HelloApplication")
+    mainClass.set("vn.ntrung.phantomgui.LauncherKt")
 }
 kotlin {
     jvmToolchain(17)
@@ -56,6 +57,43 @@ dependencies {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+// Cấu hình Shadow JAR để tạo executable JAR với tất cả dependencies
+tasks.shadowJar {
+    archiveBaseName.set("PhantomGUI")
+    archiveClassifier.set("all")
+    archiveVersion.set("1.0-SNAPSHOT")
+
+    manifest {
+        attributes(
+            "Main-Class" to "vn.ntrung.phantomgui.LauncherKt"
+        )
+    }
+
+    // Loại bỏ module-info để tránh conflict với fat JAR
+    exclude("module-info.class")
+    exclude("META-INF/*.SF")
+    exclude("META-INF/*.DSA")
+    exclude("META-INF/*.RSA")
+
+    mergeServiceFiles()
+}
+
+// Thêm shadowJar vào build task
+tasks.build {
+    dependsOn(tasks.shadowJar)
+}
+
+// Task để chạy shadow JAR
+tasks.register<JavaExec>("runJar") {
+    group = "application"
+    description = "Chạy ứng dụng từ shadow JAR"
+    dependsOn(tasks.shadowJar)
+
+    val jarFile = tasks.shadowJar.get().archiveFile.get().asFile
+    classpath = files(jarFile)
+    mainClass.set("vn.ntrung.phantomgui.LauncherKt")
 }
 
 jlink {
