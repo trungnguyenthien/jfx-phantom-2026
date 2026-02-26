@@ -37,21 +37,25 @@ object RootUtils {
      * - JAR   → thư mục chứa JAR đang chạy
      */
     val rootDir: File by lazy {
-        if (isDebugMode) {
-            val resourceUrl = RootUtils::class.java.getResource("/root")
-                ?: throw IllegalStateException(
-                    "Không tìm thấy '/root' trong classpath. " +
-                    "Hãy đảm bảo thư mục 'src/main/resources/root/' tồn tại trong project."
-                )
-            File(URI(resourceUrl.toExternalForm()))
-        } else {
-            val jarLocation = RootUtils::class.java
-                .protectionDomain
-                .codeSource
-                .location
-                .toURI()
-            File(jarLocation).parentFile
-        }
+        if (isDebugMode) debugRootDir() else jarRootDir()
+    }
+
+    private fun debugRootDir(): File {
+        val url = RootUtils::class.java.getResource("/root")
+            ?: throw IllegalStateException(
+                "Không tìm thấy '/root' trong classpath. " +
+                "Hãy đảm bảo thư mục 'src/main/resources/root/' tồn tại trong project."
+            )
+        return File(URI(url.toExternalForm()))
+    }
+
+    private fun jarRootDir(): File {
+        val location = RootUtils::class.java
+            .protectionDomain
+            .codeSource
+            .location
+            .toURI()
+        return File(location).parentFile
     }
 
     /**

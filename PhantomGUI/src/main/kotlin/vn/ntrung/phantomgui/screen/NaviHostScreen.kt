@@ -28,12 +28,11 @@ class NaviHostScreen {
     }
 
     // Ánh xạ các component từ FXML
-    @FXML lateinit var btnMenu: Button       // 1
-    @FXML lateinit var btnBack: Button       // 2
-    @FXML lateinit var lblTitle: Label       // 3
-    @FXML lateinit var btnClose: Button      // 4
-    @FXML lateinit var btnTerminal: Button   // 5
-    @FXML lateinit var screenContainer: StackPane // 6
+    @FXML lateinit var btnBack: Button       // 1
+    @FXML lateinit var lblTitle: Label       // 2
+    @FXML lateinit var btnClose: Button      // 3
+    @FXML lateinit var btnTerminal: Button   // 4
+    @FXML lateinit var screenContainer: StackPane // 5
 
     private data class ScreenEntry(val node: Node, val title: String)
     private val history = Stack<ScreenEntry>()
@@ -98,7 +97,8 @@ class NaviHostScreen {
     }
 
     private fun updateTopBar() {
-        btnBack.isDisable = history.size <= 1
+        btnBack.isVisible = history.size > 1
+        btnBack.isManaged = history.size > 1
         if (history.isNotEmpty()) {
             lblTitle.text = history.peek().title
         } else {

@@ -2,6 +2,22 @@
 # =============================================================================
 # buildFatJar.sh — Build PhantomGUI fat JAR + đóng gói ra thư mục dist/
 # =============================================================================
+#
+# Luồng build:
+#
+#   ./gradlew shadowJar
+#       └─▶ build/libs/PhantomGUI-1.0-SNAPSHOT-all.jar   (Gradle output, tạm thời)
+#
+#   Script này sẽ:
+#       1. Chạy shadowJar để tạo JAR trong build/libs/
+#       2. Copy JAR + toàn bộ src/main/resources/root/ vào dist/
+#       3. dist/ là thư mục deploy cuối cùng — chạy JAR từ đây
+#
+# Lưu ý:
+#   • build/libs/  → Gradle output directory, KHÔNG chỉnh sửa thủ công
+#   • dist/        → Thư mục deploy, copy cho client/server là đủ
+#   • src/main/resources/root/ → Source of truth cho runtime files (data.json, ...)
+#
 # Output:
 #   dist/
 #     PhantomGUI-1.0-SNAPSHOT-all.jar   ← fat JAR (tất cả dependencies)

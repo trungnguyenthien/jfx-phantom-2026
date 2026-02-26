@@ -6,6 +6,8 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
@@ -14,21 +16,14 @@
       fx:controller="vn.ntrung.phantomgui.screen.NaviHostScreen"
       style="-fx-background-color: white;">
 
-    <BorderPane style="-fx-border-color: #cccccc; -fx-border-width: 0 0 1 0; -fx-padding: 8;">
+    <!-- ── Header ── -->
+    <BorderPane style="-fx-background-color: #7E0B48; -fx-border-color: #cccccc; -fx-border-width: 0 0 1 0; -fx-padding: 8;">
 
         <left>
             <HBox alignment="CENTER_LEFT" spacing="8.0" BorderPane.alignment="CENTER">
-                <Button fx:id="btnMenu" prefHeight="35.0" prefWidth="40.0" style="-fx-cursor: hand;">
-                    <graphic>
-                        <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-                            <image>
-                                <Image url="@/assets/icons/menu.png" />
-                            </image>
-                        </ImageView>
-                    </graphic>
-                </Button>
-
-                <Button fx:id="btnBack" disable="true" prefHeight="35.0" prefWidth="40.0" style="-fx-cursor: hand;">
+                <Button fx:id="btnBack" visible="false" managed="false"
+                        prefHeight="36.0" prefWidth="36.0"
+                        style="-fx-cursor: hand; -fx-background-color: rgba(255,255,255,0.5); -fx-background-radius: 50%; -fx-border-width: 0;">
                     <graphic>
                         <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
                             <image>
@@ -41,26 +36,19 @@
         </left>
 
         <center>
-            <Label fx:id="lblTitle" text="[PAGE TITLE]" style="-fx-font-weight: bold; -fx-font-size: 16px;" BorderPane.alignment="CENTER" />
+            <Label fx:id="lblTitle" text="[PAGE TITLE]"
+                   style="-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: white;"
+                   BorderPane.alignment="CENTER" />
         </center>
 
         <right>
-            <HBox alignment="CENTER_RIGHT" spacing="8.0" BorderPane.alignment="CENTER">
-                <Button fx:id="btnClose" prefHeight="35.0" prefWidth="40.0" style="-fx-cursor: hand;">
+            <HBox alignment="CENTER_RIGHT" BorderPane.alignment="CENTER">
+                <Button fx:id="btnClose" prefHeight="36.0" prefWidth="36.0"
+                        style="-fx-cursor: hand; -fx-background-color: rgba(255,255,255,0.5); -fx-background-radius: 50%; -fx-border-width: 0;">
                     <graphic>
                         <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
                             <image>
                                 <Image url="@/assets/icons/close.png" />
-                            </image>
-                        </ImageView>
-                    </graphic>
-                </Button>
-
-                <Button fx:id="btnTerminal" prefHeight="35.0" prefWidth="40.0" style="-fx-cursor: hand;">
-                    <graphic>
-                        <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-                            <image>
-                                <Image url="@/assets/icons/terminal.png" />
                             </image>
                         </ImageView>
                     </graphic>
@@ -70,6 +58,24 @@
 
     </BorderPane>
 
+    <!-- ── Content ── -->
     <StackPane fx:id="screenContainer" VBox.vgrow="ALWAYS" style="-fx-background-color: #5c6c7c;" />
 
+    <!-- ── Footer ── -->
+    <HBox style="-fx-background-color: #7E0B48; -fx-border-color: #cccccc; -fx-border-width: 1 0 0 0; -fx-padding: 6;" alignment="CENTER_RIGHT">
+        <Button fx:id="btnTerminal" prefHeight="36.0" prefWidth="36.0"
+                style="-fx-cursor: hand; -fx-background-color: rgba(255,255,255,0.5); -fx-background-radius: 50%; -fx-border-width: 0;">
+            <graphic>
+                <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                    <image>
+                        <Image url="@/assets/icons/terminal.png" />
+                    </image>
+                </ImageView>
+            </graphic>
+        </Button>
+    </HBox>
+
 </VBox>
+
+
+
