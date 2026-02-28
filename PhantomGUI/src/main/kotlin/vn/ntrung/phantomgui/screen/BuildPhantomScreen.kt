@@ -50,6 +50,8 @@ class BuildPhantomScreen : VBox() {
         // ── Scroll area ───────────────────────────────────────────────────────
         val scroll = ScrollPane(scrollContent).apply {
             isFitToWidth = true
+            hbarPolicy = ScrollPane.ScrollBarPolicy.NEVER
+            vbarPolicy = ScrollPane.ScrollBarPolicy.NEVER
             style = "-fx-background-color: transparent; -fx-background: transparent;"
             VBox.setVgrow(this, Priority.ALWAYS)
         }
@@ -79,6 +81,15 @@ class BuildPhantomScreen : VBox() {
             """.trimIndent()
         }
         // TODO: implement OPERATE action
+        btnOperate.setOnAction {
+            val allValid = segmentList.children
+                .filterIsInstance<SegmentDataView>()
+                .map { it.validate() }
+                .all { it }
+            if (allValid) {
+                // TODO: proceed with operation
+            }
+        }
 
         val spacer = Region().apply { HBox.setHgrow(this, Priority.ALWAYS) }
         val footerInner = HBox(8.0, btnOperate, spacer, btnAdd).apply {
@@ -219,6 +230,7 @@ class BuildPhantomScreen : VBox() {
         val view = SegmentDataView()
         view.btnClose.setOnAction { segmentList.children.remove(view) }
         segmentList.children.add(view)
+        view.validate()
     }
 
     // ── Collect all filled data ───────────────────────────────────────────────

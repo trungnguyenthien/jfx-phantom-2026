@@ -10,6 +10,7 @@ import javafx.scene.layout.ColumnConstraints
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
+import javafx.scene.layout.Region
 import javafx.scene.layout.StackPane
 import javafx.stage.FileChooser
 import java.io.File
@@ -34,11 +35,7 @@ class SegmentDataView : StackPane() {
     private val cmbName = ComboBox<String>().apply {
         isEditable = false
         maxWidth = Double.MAX_VALUE
-        style = """
-            -fx-background-color: transparent;
-            -fx-border-color: transparent;
-            -fx-padding: 0;
-        """.trimIndent()
+        style = "-fx-background-color: transparent; -fx-border-color: transparent; -fx-padding: 0;"
         items.addAll(
             "ICRU46_Skeleton-cortical bone Fetus (20 weeks)",
             "G4_TISSUE_SOFT_ICRP",
@@ -53,17 +50,10 @@ class SegmentDataView : StackPane() {
 
     private val tfDensity = TextField().apply {
         maxWidth = Double.MAX_VALUE
-        style = """
-            -fx-background-color: transparent;
-            -fx-border-color: transparent;
-            -fx-padding: 4 8;
-            -fx-font-size: 13px;
-        """.trimIndent()
+        style = "-fx-background-color: transparent; -fx-border-color: transparent; -fx-padding: 4 8; -fx-font-size: 13px;"
         // Allow only valid float input
         textProperty().addListener { _, oldVal, newVal ->
-            if (newVal.isNotEmpty() && !newVal.matches(Regex("-?\\d*\\.?\\d*"))) {
-                text = oldVal
-            }
+            if (newVal.isNotEmpty() && !newVal.matches(Regex("-?\\d*\\.?\\d*"))) text = oldVal
         }
     }
 
@@ -79,6 +69,14 @@ class SegmentDataView : StackPane() {
         """.trimIndent()
     }
 
+    // ── Cell refs for validation ──────────────────────────────────────────────
+    private lateinit var vrmlRow: HBox
+    private lateinit var nameCell: HBox
+    private lateinit var densityCell: HBox
+
+    private val normalStyle = "-fx-background-color: transparent;"
+    private val errorStyle  = "-fx-background-color: #FFEBEE;"
+
     init {
         maxWidth = 480.0
         padding = Insets(8.0, 0.0, 8.0, 0.0)
@@ -93,94 +91,104 @@ class SegmentDataView : StackPane() {
             """.trimIndent()
             maxWidth = Double.MAX_VALUE
         }
-
         children.add(card)
     }
 
     // ── Build the 3-row grid ──────────────────────────────────────────────────
     private fun buildGrid(): GridPane {
         val grid = GridPane().apply { maxWidth = Double.MAX_VALUE }
+        grid.columnConstraints.addAll(
+            ColumnConstraints(130.0),
+            ColumnConstraints().apply { hgrow = Priority.ALWAYS; isFillWidth = true }
+        )
 
-        // Column constraints: label col fixed, value col grows
-        val labelCol = ColumnConstraints(130.0)
-        val valueCol = ColumnConstraints().apply {
-            hgrow = Priority.ALWAYS
-            isFillWidth = true
-        }
-        grid.columnConstraints.addAll(labelCol, valueCol)
-
-        // ── Row 0: VRML file ── btnClose lives here, aligned right ───────────
-        val lblVrmlKey = buildKeyLabel("VRML file")
-        val spacer = javafx.scene.layout.Region().apply {
-            HBox.setHgrow(this, Priority.ALWAYS)
-        }
-        val vrmlRow = HBox(4.0, lblVrmlValue, spacer, btnClose).apply {
+        // ── Row 0: VRML file ──────────────────────────────────────────────────
+        val spacer = Region().apply { HBox.setHgrow(this, Priority.ALWAYS) }
+        vrmlRow = HBox(4.0, lblVrmlValue, spacer, btnClose).apply {
             alignment = Pos.CENTER_LEFT
             padding = Insets(4.0, 4.0, 4.0, 8.0)
             maxWidth = Double.MAX_VALUE
             HBox.setHgrow(this, Priority.ALWAYS)
-            style = "-fx-cursor: hand;"
+            style = "-fx-cursor: hand; $normalStyle"
         }
-        // clicking anywhere on the row (except btnClose) opens picker
-        vrmlRow.setOnMouseClicked { e ->
-            if (e.target != btnClose) openVrmlPicker()
-        }
+        vrmlRow.setOnMouseClicked { e -> if (e.target != btnClose) openVrmlPicker() }
 
-        grid.add(wrapKeyCell(lblVrmlKey), 0, 0)
+        grid.add(wrapKeyCell("VRML file"), 0, 0)
         grid.add(vrmlRow, 1, 0)
         grid.add(buildDivider(), 0, 1, 2, 1)
 
         // ── Row 2: Name ───────────────────────────────────────────────────────
-        val lblNameKey = buildKeyLabel("Name")
-        val nameCell = HBox(cmbName).apply {
+        nameCell = HBox(cmbName).apply {
             alignment = Pos.CENTER_LEFT
             padding = Insets(4.0, 8.0, 4.0, 4.0)
             maxWidth = Double.MAX_VALUE
             HBox.setHgrow(cmbName, Priority.ALWAYS)
+            style = normalStyle
         }
-        grid.add(wrapKeyCell(lblNameKey), 0, 2)
+        cmbName.valueProperty().addListener { _, _, _ -> nameCell.style = normalStyle }
+
+        grid.add(wrapKeyCell("Name"), 0, 2)
         grid.add(nameCell, 1, 2)
         grid.add(buildDivider(), 0, 3, 2, 1)
 
         // ── Row 4: Density ────────────────────────────────────────────────────
-        val lblDensityKey = buildKeyLabel("Density (g/cm3)")
-        val densityCell = HBox(tfDensity).apply {
+        densityCell = HBox(tfDensity).apply {
             alignment = Pos.CENTER_LEFT
             padding = Insets(4.0, 8.0, 4.0, 4.0)
             maxWidth = Double.MAX_VALUE
             HBox.setHgrow(tfDensity, Priority.ALWAYS)
+            style = normalStyle
         }
-        grid.add(wrapKeyCell(lblDensityKey), 0, 4)
+        tfDensity.textProperty().addListener { _, _, _ -> densityCell.style = normalStyle }
+
+        grid.add(wrapKeyCell("Density (g/cm3)"), 0, 4)
         grid.add(densityCell, 1, 4)
 
         return grid
     }
 
-    // ── Helper: key label cell ────────────────────────────────────────────────
-    private fun buildKeyLabel(text: String) = Label(text).apply {
-        isWrapText = false
-        style = "-fx-font-size: 12px; -fx-text-fill: #333333; -fx-font-weight: bold;"
+    // ── Validation ────────────────────────────────────────────────────────────
+    /** Highlights missing fields in red. Returns true if all fields are filled. */
+    fun validate(): Boolean {
+        var valid = true
+        if (vrmlFile == null) {
+            vrmlRow.style = "-fx-cursor: hand; $errorStyle"; valid = false
+        }
+        if (cmbName.value.isNullOrBlank()) {
+            nameCell.style = errorStyle; valid = false
+        }
+        if (tfDensity.text.trim().toDoubleOrNull() == null) {
+            densityCell.style = errorStyle; valid = false
+        }
+        return valid
     }
 
-    private fun wrapKeyCell(lbl: Label) = HBox(lbl).apply {
+    fun clearValidation() {
+        vrmlRow.style     = "-fx-cursor: hand; $normalStyle"
+        nameCell.style    = normalStyle
+        densityCell.style = normalStyle
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+    private fun wrapKeyCell(text: String) = HBox(
+        Label(text).apply {
+            isWrapText = false
+            style = "-fx-font-size: 12px; -fx-text-fill: #333333; -fx-font-weight: bold;"
+        }
+    ).apply {
         alignment = Pos.CENTER_LEFT
         padding = Insets(10.0, 12.0, 10.0, 14.0)
-        style = """
-            -fx-border-color: #cccccc;
-            -fx-border-width: 0 1.5 0 0;
-        """.trimIndent()
+        style = "-fx-border-color: #cccccc; -fx-border-width: 0 1.5 0 0;"
         minWidth = 130.0
         maxWidth = 130.0
     }
 
-    // ── Helper: horizontal divider ────────────────────────────────────────────
     private fun buildDivider() = HBox().apply {
         prefHeight = 1.0
         maxWidth = Double.MAX_VALUE
         style = "-fx-background-color: #cccccc;"
     }
 
-    // ── File picker ───────────────────────────────────────────────────────────
     private fun openVrmlPicker() {
         val chooser = FileChooser().apply {
             title = "Select VRML file"
@@ -193,5 +201,6 @@ class SegmentDataView : StackPane() {
         val selected = chooser.showOpenDialog(window) ?: return
         vrmlFile = selected
         lblVrmlValue.text = selected.name
+        vrmlRow.style = "-fx-cursor: hand; $normalStyle"
     }
 }
