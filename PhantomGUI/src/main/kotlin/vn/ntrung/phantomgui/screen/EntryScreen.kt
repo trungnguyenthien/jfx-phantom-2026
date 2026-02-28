@@ -15,6 +15,15 @@ class EntryScreen : VBox() {
         padding = Insets(48.0)
         style = "-fx-background-color: #ffffff;"
 
+        // ── Header title ─────────────────────────────────────────────────────
+        val lblHeader = Label("B&M Phantom").apply {
+            style = """
+                -fx-font-size: 32px;
+                -fx-font-weight: bold;
+                -fx-text-fill: #111111;
+            """.trimIndent()
+        }
+
         // ── Description label ────────────────────────────────────────────────
         val lblDescription = Label(
             "A powerful web-based platform for creating and merging advanced voxel phantoms " +
@@ -29,7 +38,7 @@ class EntryScreen : VBox() {
 
         // ── Button 1 ─────────────────────────────────────────────────────────
         val btn1 = buildOptionButton(number = "1", label = "Build Phantom from \"Segment file\"") {
-            // TODO: implement
+            NaviHostScreen.instance.push(BuildPhantomScreen(), title = "Build Phantom")
         }
 
         // ── Button 2 ─────────────────────────────────────────────────────────
@@ -42,7 +51,7 @@ class EntryScreen : VBox() {
             maxWidth = 520.0
         }
 
-        children.addAll(lblDescription, btnGroup)
+        children.addAll(lblHeader, lblDescription, btnGroup)
     }
 
     // ── Helper: tạo 1 button có số thứ tự bên trái ──────────────────────────
