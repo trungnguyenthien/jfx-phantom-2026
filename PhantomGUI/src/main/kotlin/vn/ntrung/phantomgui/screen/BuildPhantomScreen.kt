@@ -5,6 +5,7 @@ import javafx.geometry.Pos
 import javafx.scene.control.Button
 import javafx.scene.control.Label
 import javafx.scene.control.ScrollPane
+import javafx.scene.control.TextArea
 import javafx.scene.control.TextField
 import javafx.scene.layout.ColumnConstraints
 import javafx.scene.layout.GridPane
@@ -13,10 +14,39 @@ import javafx.scene.layout.Priority
 import javafx.scene.layout.Region
 import javafx.scene.layout.VBox
 import javafx.stage.DirectoryChooser
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.javafx.JavaFx
+import kotlinx.coroutines.launch
+import vn.ntrung.phantomgui.util.PythonExecutor
+import vn.ntrung.phantomgui.util.RootUtils
 import vn.ntrung.phantomgui.view.SegmentDataView
 import java.io.File
 
 class BuildPhantomScreen : VBox() {
+
+    private val uiScope = CoroutineScope(Dispatchers.JavaFx)
+    private val pythonExecutor = PythonExecutor()
+
+    // ── Log output area ───────────────────────────────────────────────────────
+    private val logArea = TextArea().apply {
+        isEditable = false
+        isWrapText = true
+        prefHeight = 160.0
+        maxWidth = 480.0
+        isVisible = false
+        isManaged = false
+        style = """
+            -fx-font-family: monospace;
+            -fx-font-size: 12px;
+            -fx-background-color: #1e1e1e;
+            -fx-text-fill: #d4d4d4;
+            -fx-control-inner-background: #1e1e1e;
+            -fx-border-color: #444444;
+            -fx-border-radius: 6;
+            -fx-background-radius: 6;
+        """.trimIndent()
+    }
 
     // ── Top form fields ───────────────────────────────────────────────────────
     private val tfVoxelX = buildIntField()
@@ -42,8 +72,15 @@ class BuildPhantomScreen : VBox() {
         // ── Top config panel ──────────────────────────────────────────────────
         val topPanel = buildTopPanel()
 
-        // ── Scroll content: topPanel + segmentList ────────────────────────────
-        val scrollContent = VBox(0.0, topPanel, segmentList).apply {
+        // ── Log panel ─────────────────────────────────────────────────────────
+        val logPanel = VBox(6.0).apply {
+            alignment = Pos.CENTER
+            padding = Insets(0.0, 0.0, 12.0, 0.0)
+            children.add(logArea)
+        }
+
+        // ── Scroll content: topPanel + segmentList + logPanel ─────────────────
+        val scrollContent = VBox(0.0, topPanel, segmentList, logPanel).apply {
             style = "-fx-background-color: #f8f8f8;"
         }
 
@@ -81,15 +118,7 @@ class BuildPhantomScreen : VBox() {
             """.trimIndent()
         }
         // TODO: implement OPERATE action
-        btnOperate.setOnAction {
-            val allValid = segmentList.children
-                .filterIsInstance<SegmentDataView>()
-                .map { it.validate() }
-                .all { it }
-            if (allValid) {
-                // TODO: proceed with operation
-            }
-        }
+        btnOperate.setOnAction { onOperate(btnOperate) }
 
         val spacer = Region().apply { HBox.setHgrow(this, Priority.ALWAYS) }
         val footerInner = HBox(8.0, btnOperate, spacer, btnAdd).apply {
@@ -223,6 +252,63 @@ class BuildPhantomScreen : VBox() {
         val selected = chooser.showDialog(window) ?: return
         outputDirectory = selected
         lblOutputDir.text = selected.absolutePath
+    }
+
+    // ── OPERATE ───────────────────────────────────────────────────────────────
+    private fun onOperate(btnOperate: Button) {
+        // 1. Validate segments
+        val segments = segmentList.children.filterIsInstance<SegmentDataView>()
+        val segmentsValid = segments.map { it.validate() }.all { it }
+
+        // 2. Validate top fields
+        val vx = voxelX
+        val vy = voxelY
+        val vz = voxelZ
+        val outDir = outputDirectory
+
+        if (!segmentsValid || vx == null || vy == null || vz == null || outDir == null) {
+            logArea.text = "[ERROR] Vui lòng điền đầy đủ tất cả các trường bắt buộc.\n"
+            return
+        }
+
+        // 3. Write mapping CSV
+        val csvFile = File(outDir, "mapping.csv")
+        csvFile.bufferedWriter().use { w ->
+            w.write("filename,material_name,density\n")
+            segments.forEach { seg ->
+                w.write("${seg.vrmlFile!!.absolutePath},${seg.selectedName},${seg.density}\n")
+            }
+        }
+
+        // 4. Locate buildPhantom.py via RootUtils
+        val scriptFile = RootUtils.path("buildPhantom.py")
+        val outputFile = File(outDir, "output.g4dcm").absolutePath
+
+        val args = listOf(
+            "--csv", csvFile.absolutePath,
+            "--voxel_x", vx.toString(),
+            "--voxel_y", vy.toString(),
+            "--voxel_z", vz.toString(),
+            "--output", outputFile
+        )
+
+        // 5. Run via PythonExecutor
+        logArea.clear()
+        logArea.isVisible = true
+        logArea.isManaged = true
+        logArea.appendText("[INFO] Đang chạy buildPhantom.py...\n")
+        logArea.appendText("[INFO] Script: ${scriptFile.absolutePath}\n")
+        logArea.appendText("[INFO] CSV: ${csvFile.absolutePath}\n\n")
+        btnOperate.isDisable = true
+
+        uiScope.launch {
+            pythonExecutor.execute(scriptFile.absolutePath, args).collect { line ->
+                logArea.appendText("$line\n")
+                logArea.scrollTop = Double.MAX_VALUE
+            }
+            logArea.appendText("\n[INFO] Hoàn thành.")
+            btnOperate.isDisable = false
+        }
     }
 
     // ── Add a new SegmentDataView row ─────────────────────────────────────────
