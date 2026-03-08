@@ -32,19 +32,14 @@ class BuildPhantomScreen : VBox() {
     private val logArea = TextArea().apply {
         isEditable = false
         isWrapText = true
-        prefHeight = 160.0
-        maxWidth = 480.0
-        isVisible = false
-        isManaged = false
         style = """
             -fx-font-family: monospace;
             -fx-font-size: 12px;
-            -fx-background-color: #1e1e1e;
-            -fx-text-fill: #d4d4d4;
-            -fx-control-inner-background: #1e1e1e;
-            -fx-border-color: #444444;
-            -fx-border-radius: 6;
-            -fx-background-radius: 6;
+            -fx-background-color: #f5f5f5;
+            -fx-text-fill: #1a1a1a;
+            -fx-control-inner-background: #f5f5f5;
+            -fx-border-color: transparent;
+            -fx-background-radius: 0;
         """.trimIndent()
     }
 
@@ -64,36 +59,49 @@ class BuildPhantomScreen : VBox() {
         padding = Insets(8.0, 0.0, 8.0, 0.0)
     }
 
+    // Keep reference for enabling/disabling
+    private lateinit var btnOperate: Button
+
     init {
         spacing = 0.0
         style = "-fx-background-color: #f8f8f8;"
         VBox.setVgrow(this, Priority.ALWAYS)
 
-        // ── Top config panel ──────────────────────────────────────────────────
-        val topPanel = buildTopPanel()
+        // ── LEFT: input column ─────────────────────────────────────────────────
+        val leftPanel = buildLeftPanel()
 
-        // ── Log panel ─────────────────────────────────────────────────────────
-        val logPanel = VBox(6.0).apply {
-            alignment = Pos.CENTER
-            padding = Insets(0.0, 0.0, 12.0, 0.0)
-            children.add(logArea)
+        // ── RIGHT: output column ───────────────────────────────────────────────
+        val rightPanel = buildRightPanel()
+
+        // ── Body: HBox with left + right ───────────────────────────────────────
+        val body = HBox(leftPanel, rightPanel).apply {
+            VBox.setVgrow(this, Priority.ALWAYS)
         }
 
-        // ── Scroll content: topPanel + segmentList + logPanel ─────────────────
-        val scrollContent = VBox(0.0, topPanel, segmentList, logPanel).apply {
+        children.add(body)
+
+        // Start with one empty segment row
+        addSegmentView()
+    }
+
+    // ── LEFT panel: top config + segment list + footer ────────────────────────
+    private fun buildLeftPanel(): VBox {
+        val topPanel = buildTopPanel()
+
+        val scrollContent = VBox(0.0, topPanel, segmentList).apply {
             style = "-fx-background-color: #f8f8f8;"
         }
 
-        // ── Scroll area ───────────────────────────────────────────────────────
         val scroll = ScrollPane(scrollContent).apply {
             isFitToWidth = true
             hbarPolicy = ScrollPane.ScrollBarPolicy.NEVER
             vbarPolicy = ScrollPane.ScrollBarPolicy.NEVER
             style = "-fx-background-color: transparent; -fx-background: transparent;"
             VBox.setVgrow(this, Priority.ALWAYS)
+            prefWidth = 500.0
         }
 
-        // ── Footer: Add button ────────────────────────────────────────────────
+        // Footer buttons
         val btnAdd = Button("+ Add Segment").apply {
             style = """
                 -fx-background-color: #7E0B48;
@@ -103,10 +111,10 @@ class BuildPhantomScreen : VBox() {
                 -fx-cursor: hand;
                 -fx-padding: 8 20;
             """.trimIndent()
+            setOnAction { addSegmentView() }
         }
-        btnAdd.setOnAction { addSegmentView() }
 
-        val btnOperate = Button("OPERATE").apply {
+        btnOperate = Button("OPERATE").apply {
             style = """
                 -fx-background-color: #1565C0;
                 -fx-text-fill: white;
@@ -116,26 +124,48 @@ class BuildPhantomScreen : VBox() {
                 -fx-cursor: hand;
                 -fx-padding: 8 24;
             """.trimIndent()
+            setOnAction { onOperate(this) }
         }
-        // TODO: implement OPERATE action
-        btnOperate.setOnAction { onOperate(btnOperate) }
 
         val spacer = Region().apply { HBox.setHgrow(this, Priority.ALWAYS) }
-        val footerInner = HBox(8.0, btnOperate, spacer, btnAdd).apply {
-            alignment = Pos.CENTER
-            maxWidth = 480.0
-        }
-        val footer = HBox(footerInner).apply {
-            alignment = Pos.CENTER
-            padding = Insets(12.0, 0.0, 12.0, 0.0)
-            style = "-fx-background-color: #f8f8f8; -fx-border-color: #dddddd; -fx-border-width: 1 0 0 0;"
-            HBox.setHgrow(footerInner, Priority.ALWAYS)
+        val footer = HBox(8.0, btnOperate, spacer, btnAdd).apply {
+            alignment = Pos.CENTER_LEFT
+            padding = Insets(12.0, 12.0, 12.0, 12.0)
+            style = """
+                -fx-background-color: #f8f8f8;
+                -fx-border-color: #dddddd;
+                -fx-border-width: 1 1 0 0;
+            """.trimIndent()
         }
 
-        children.addAll(scroll, footer)
+        return VBox(scroll, footer).apply {
+            prefWidth = 500.0
+            minWidth = 500.0
+            maxWidth = 500.0
+            style = "-fx-background-color: #f8f8f8; -fx-border-color: #dddddd; -fx-border-width: 0 1 0 0;"
+            VBox.setVgrow(scroll, Priority.ALWAYS)
+        }
+    }
 
-        // Start with one empty segment row
-        addSegmentView()
+    // ── RIGHT panel: output log ────────────────────────────────────────────────
+    private fun buildRightPanel(): VBox {
+        val header = Label("[Output screen]").apply {
+            style = """
+                -fx-font-size: 12px;
+                -fx-text-fill: #888888;
+                -fx-padding: 6 12 6 12;
+                -fx-background-color: #f0f0f0;
+            """.trimIndent()
+            maxWidth = Double.MAX_VALUE
+        }
+
+        VBox.setVgrow(logArea, Priority.ALWAYS)
+
+        return VBox(header, logArea).apply {
+            HBox.setHgrow(this, Priority.ALWAYS)
+            VBox.setVgrow(logArea, Priority.ALWAYS)
+            style = "-fx-background-color: #f5f5f5;"
+        }
     }
 
     // ── Build the top config panel ────────────────────────────────────────────
@@ -149,30 +179,24 @@ class BuildPhantomScreen : VBox() {
         """.trimIndent()
 
         // ── Voxel Dimension ───────────────────────────────────────────────────
-        val voxelRow = HBox(10.0).apply {
-            alignment = Pos.CENTER_LEFT
-        }
+        val voxelRow = HBox(10.0).apply { alignment = Pos.CENTER_LEFT }
 
         listOf("X" to tfVoxelX, "Y" to tfVoxelY, "Z" to tfVoxelZ).forEach { (axis, tf) ->
             val lbl = Label(axis).apply {
                 style = "-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #444444;"
                 minWidth = 16.0
             }
-            tf.prefWidth = 80.0
+            tf.prefWidth = 60.0
             voxelRow.children.addAll(lbl, tf)
         }
 
-        val voxelGrid = buildLabeledRow("Voxel Dimension", voxelRow)
-
-        val voxelCard = VBox(voxelGrid).apply {
+        val voxelCard = VBox(buildLabeledRow("Voxel Dimension", voxelRow)).apply {
             style = cardStyle
-            maxWidth = 480.0
+            maxWidth = Double.MAX_VALUE
         }
 
         // ── Output Directory ──────────────────────────────────────────────────
-        lblOutputDir.apply {
-            style = "-fx-font-size: 13px; -fx-text-fill: #555555; -fx-cursor: hand;"
-        }
+        lblOutputDir.style = "-fx-font-size: 13px; -fx-text-fill: #555555; -fx-cursor: hand;"
 
         val dirValueBox = HBox(lblOutputDir).apply {
             alignment = Pos.CENTER_LEFT
@@ -181,16 +205,14 @@ class BuildPhantomScreen : VBox() {
             style = "-fx-cursor: hand;"
         }
 
-        val dirGrid = buildLabeledRow("Output Directory", dirValueBox)
-
-        val dirCard = VBox(dirGrid).apply {
+        val dirCard = VBox(buildLabeledRow("Output Directory", dirValueBox)).apply {
             style = cardStyle
-            maxWidth = 480.0
+            maxWidth = Double.MAX_VALUE
         }
 
         return VBox(10.0, voxelCard, dirCard).apply {
             alignment = Pos.CENTER
-            padding = Insets(14.0, 0.0, 6.0, 0.0)
+            padding = Insets(14.0, 10.0, 6.0, 10.0)
             style = "-fx-background-color: #f8f8f8;"
             maxWidth = Double.MAX_VALUE
         }
@@ -199,29 +221,28 @@ class BuildPhantomScreen : VBox() {
     // ── Helper: one labelled row inside a card ────────────────────────────────
     private fun buildLabeledRow(labelText: String, valueNode: javafx.scene.Node): GridPane {
         val keyLabel = Label(labelText).apply {
-            style = "-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #333333;"
-            minWidth = 140.0
-            maxWidth = 140.0
+            style = "-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #333333;"
+            isWrapText = true
         }
         val keyCell = HBox(keyLabel).apply {
             alignment = Pos.CENTER_LEFT
-            padding = Insets(10.0, 12.0, 10.0, 14.0)
-            minWidth = 140.0
-            maxWidth = 140.0
+            padding = Insets(10.0, 8.0, 10.0, 10.0)
+            minWidth = 110.0
+            maxWidth = 110.0
             style = "-fx-border-color: #cccccc; -fx-border-width: 0 1.5 0 0;"
         }
         val valueCell = HBox(valueNode).apply {
             alignment = Pos.CENTER_LEFT
-            padding = Insets(8.0, 12.0, 8.0, 12.0)
+            padding = Insets(8.0, 8.0, 8.0, 8.0)
             maxWidth = Double.MAX_VALUE
-            HBox.setHgrow(valueNode as? Region ?: valueNode.let { it as? Region ?: HBox(it) }, Priority.ALWAYS)
+            HBox.setHgrow(valueNode as? Region ?: HBox(valueNode), Priority.ALWAYS)
         }
         HBox.setHgrow(valueCell, Priority.ALWAYS)
 
         val grid = GridPane().apply {
             maxWidth = Double.MAX_VALUE
             columnConstraints.addAll(
-                ColumnConstraints(140.0),
+                ColumnConstraints(110.0),
                 ColumnConstraints().apply { hgrow = Priority.ALWAYS; isFillWidth = true }
             )
         }
@@ -255,12 +276,10 @@ class BuildPhantomScreen : VBox() {
     }
 
     // ── OPERATE ───────────────────────────────────────────────────────────────
-    private fun onOperate(btnOperate: Button) {
-        // 1. Validate segments
+    private fun onOperate(btn: Button) {
         val segments = segmentList.children.filterIsInstance<SegmentDataView>()
         val segmentsValid = segments.map { it.validate() }.all { it }
 
-        // 2. Validate top fields
         val vx = voxelX
         val vy = voxelY
         val vz = voxelZ
@@ -271,7 +290,6 @@ class BuildPhantomScreen : VBox() {
             return
         }
 
-        // 3. Write mapping CSV
         val csvFile = File(outDir, "mapping.csv")
         csvFile.bufferedWriter().use { w ->
             w.write("filename,material_name,density\n")
@@ -280,7 +298,6 @@ class BuildPhantomScreen : VBox() {
             }
         }
 
-        // 4. Locate buildPhantom.py via RootUtils
         val scriptFile = RootUtils.path("buildPhantom.py")
         val outputFile = File(outDir, "output.g4dcm").absolutePath
 
@@ -292,14 +309,11 @@ class BuildPhantomScreen : VBox() {
             "--output", outputFile
         )
 
-        // 5. Run via PythonExecutor
         logArea.clear()
-        logArea.isVisible = true
-        logArea.isManaged = true
         logArea.appendText("[INFO] Đang chạy buildPhantom.py...\n")
         logArea.appendText("[INFO] Script: ${scriptFile.absolutePath}\n")
         logArea.appendText("[INFO] CSV: ${csvFile.absolutePath}\n\n")
-        btnOperate.isDisable = true
+        btn.isDisable = true
 
         uiScope.launch {
             pythonExecutor.execute(scriptFile.absolutePath, args).collect { line ->
@@ -307,7 +321,7 @@ class BuildPhantomScreen : VBox() {
                 logArea.scrollTop = Double.MAX_VALUE
             }
             logArea.appendText("\n[INFO] Hoàn thành.")
-            btnOperate.isDisable = false
+            btn.isDisable = false
         }
     }
 
@@ -319,7 +333,7 @@ class BuildPhantomScreen : VBox() {
         view.validate()
     }
 
-    // ── Collect all filled data ───────────────────────────────────────────────
+    // ── Public accessors ──────────────────────────────────────────────────────
     val voxelX: Int? get() = tfVoxelX.text.trim().toIntOrNull()
     val voxelY: Int? get() = tfVoxelY.text.trim().toIntOrNull()
     val voxelZ: Int? get() = tfVoxelZ.text.trim().toIntOrNull()
