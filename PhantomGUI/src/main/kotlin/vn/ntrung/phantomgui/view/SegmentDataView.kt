@@ -193,7 +193,7 @@ class SegmentDataView : StackPane() {
         val chooser = FileChooser().apply {
             title = "Select VRML file"
             extensionFilters.addAll(
-                FileChooser.ExtensionFilter("VRML files", "*.wrl", "*.vrml"),
+                FileChooser.ExtensionFilter("VRML files", "*.wrl", "*.vrml", "*.g4dcm"),
                 FileChooser.ExtensionFilter("All files", "*.*")
             )
         }
