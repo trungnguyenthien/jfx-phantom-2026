@@ -168,8 +168,8 @@ class MergePhantomScreen : VBox() {
         onPick: () -> Unit
     ): HBox {
         val tag = Label(tagText).apply {
-            minWidth  = 80.0
-            maxWidth  = 80.0
+            minWidth  = 100.0
+            maxWidth  = 100.0
             minHeight = 44.0
             alignment = Pos.CENTER
             style = """
