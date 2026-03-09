@@ -137,7 +137,7 @@ def merge_phantoms(file1, file2,
         mat2 = ph2['mat_ids']
         rho2 = ph2['density']
 
-    elif position == "standing_beside_supine":
+    elif position in ("standing_beside_supine", "standing_supine"):
         # === FIX VẤN ĐỀ 2 ===
         # Phantom 2: nằm NGỬA
         # Ban đầu mặt hướng -Y → cần +Z
@@ -214,16 +214,28 @@ def write_g4dcm(ph, path):
             f.write(" ".join(f"{v:.3f}" for v in r) + "\n")
 
 # ==================================================
-# Ví dụ
+# Entry point
 # ==================================================
 if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Merge two G4DCM phantom files")
+    parser.add_argument("--input1",     required=True,  help="Path to first .g4dcm file")
+    parser.add_argument("--input2",     required=True,  help="Path to second .g4dcm file")
+    parser.add_argument("--situation",  required=True,
+                        choices=["face_to_face", "side_by_side", "front_to_back", "standing_supine"],
+                        help="Relative situation of the two phantoms")
+    parser.add_argument("--separation", required=True,  type=int, help="Separation in voxels")
+    parser.add_argument("--output",     required=True,  help="Output .g4dcm file path")
+    args = parser.parse_args()
+
     merged = merge_phantoms(
-        "patient.g4dcm",
-        "output.g4dcm",
-        position="standing_beside_supine",
-        d=20,
+        args.input1,
+        args.input2,
+        position=args.situation,
+        d=args.separation,
         verbose=True
     )
 
-    write_g4dcm(merged, "phantom_merged.g4dcm")
-    print("✔ Đã ghép xong phantom")
+    write_g4dcm(merged, args.output)
+    print(f"✔ Đã ghép xong phantom → {args.output}")

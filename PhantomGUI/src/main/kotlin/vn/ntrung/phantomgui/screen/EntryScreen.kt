@@ -43,7 +43,7 @@ class EntryScreen : VBox() {
 
         // ── Button 2 ─────────────────────────────────────────────────────────
         val btn2 = buildOptionButton(number = "2", label = "Build Merged Phantom") {
-            // TODO: implement
+            NaviHostScreen.instance.push(MergePhantomScreen(), title = "Merge Phantom")
         }
 
         val btnGroup = VBox(12.0, btn1, btn2).apply {

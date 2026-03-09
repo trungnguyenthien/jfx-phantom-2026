@@ -24,15 +24,18 @@ class PythonExecutor(
      * @return [Flow] phát ra từng dòng log (String) ngay khi Python in ra.
      */
     fun execute(scriptPath: String, args: List<String> = emptyList()): Flow<String> = flow {
-        // 1. Cấu hình lệnh chạy: python script.py arg1 arg2 ...
         val command = mutableListOf(pythonPath, scriptPath).apply {
             addAll(args)
         }
 
         val processBuilder = ProcessBuilder(command)
-
-        // QUAN TRỌNG: Gộp ErrorStream vào InputStream để bắt cả lỗi lẫn log thông thường
         processBuilder.redirectErrorStream(true)
+
+        // Set working directory to the script's parent so relative paths inside the script resolve correctly
+        val scriptFile = java.io.File(scriptPath)
+        if (scriptFile.parentFile?.exists() == true) {
+            processBuilder.directory(scriptFile.parentFile)
+        }
 
         var process: Process? = null
         try {
