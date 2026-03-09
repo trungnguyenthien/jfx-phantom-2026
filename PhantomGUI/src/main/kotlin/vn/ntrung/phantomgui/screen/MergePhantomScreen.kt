@@ -92,7 +92,10 @@ class MergePhantomScreen : VBox() {
             buildSituationSection(),
             buildSeparationSection(),
             buildOutputSection()
-        ).apply { style = "-fx-background-color: #f8f8f8;" }
+        ).apply {
+            style = "-fx-background-color: #f8f8f8;"
+            maxWidth = Double.MAX_VALUE
+        }
 
         val scroll = ScrollPane(content).apply {
             isFitToWidth   = true
@@ -317,25 +320,38 @@ class MergePhantomScreen : VBox() {
     // SEPARATION section
     // =========================================================================
     private fun buildSeparationSection(): VBox {
-        val sectionLabel = buildSectionLabel("SEPARATION")
+        val tag = buildTag("SEPARATION", "#6b6b6b")
 
-        val suffix = Label("(voxels)").apply {
-            style = "-fx-font-size: 12px; -fx-text-fill: #888888; -fx-padding: 0 0 0 8;"
+        // Reset tfSep style to be invisible inside the white row
+        tfSep.apply {
+            maxWidth = 120.0
+            prefWidth = 120.0
+            style = """
+                -fx-font-size: 13px;
+                -fx-background-color: transparent;
+                -fx-border-color: transparent;
+                -fx-border-width: 0;
+                -fx-background-radius: 0;
+                -fx-border-radius: 0;
+                -fx-padding: 4 8;
+            """.trimIndent()
         }
 
-        // TextField expands, suffix sits at right edge
-        tfSep.maxWidth = Double.MAX_VALUE
-        HBox.setHgrow(tfSep, Priority.ALWAYS)
-        tfSep.style = """
-            -fx-font-size: 13px;
-            -fx-background-color: transparent;
-            -fx-border-color: transparent;
-            -fx-padding: 4 8;
-        """.trimIndent()
+        val suffix = Label("(voxels)").apply {
+            style = "-fx-font-size: 12px; -fx-text-fill: #888888; -fx-padding: 0 8 0 0;"
+        }
 
-        val row = HBox(tfSep, suffix).apply {
+        val spacer = Region().apply { HBox.setHgrow(this, Priority.ALWAYS) }
+
+        val contentBox = HBox(8.0, tfSep, spacer, suffix).apply {
             alignment = Pos.CENTER_LEFT
-            padding   = Insets(6.0, 12.0, 6.0, 12.0)
+            padding   = Insets(0.0, 0.0, 0.0, 8.0)
+            HBox.setHgrow(this, Priority.ALWAYS)
+        }
+
+        val row = HBox(tag, contentBox).apply {
+            alignment = Pos.CENTER_LEFT
+            minHeight = 44.0
             style = """
                 -fx-background-color: white;
                 -fx-border-color: #cccccc;
@@ -345,8 +361,7 @@ class MergePhantomScreen : VBox() {
             """.trimIndent()
         }
 
-
-        return VBox(0.0, sectionLabel, row).apply {
+        return VBox(row).apply {
             padding = Insets(16.0, 16.0, 0.0, 16.0)
         }
     }
@@ -355,13 +370,20 @@ class MergePhantomScreen : VBox() {
     // OUTPUT section
     // =========================================================================
     private fun buildOutputSection(): VBox {
-        val sectionLabel = buildSectionLabel("OUTPUT")
+        val tag = buildTag("OUTPUT", "#6b6b6b")
 
-        val row = HBox(lblOutDir).apply {
+        val contentBox = HBox(lblOutDir).apply {
             alignment = Pos.CENTER_LEFT
-            padding   = Insets(10.0, 12.0, 10.0, 12.0)
-            maxWidth  = Double.MAX_VALUE
+            padding   = Insets(0.0, 12.0, 0.0, 12.0)
             HBox.setHgrow(lblOutDir, Priority.ALWAYS)
+            HBox.setHgrow(this, Priority.ALWAYS)
+            style = "-fx-cursor: hand;"
+            setOnMouseClicked { openDirPicker() }
+        }
+
+        val row = HBox(tag, contentBox).apply {
+            alignment = Pos.CENTER_LEFT
+            minHeight = 44.0
             style = """
                 -fx-background-color: white;
                 -fx-border-color: #cccccc;
@@ -370,10 +392,9 @@ class MergePhantomScreen : VBox() {
                 -fx-background-radius: 4;
                 -fx-cursor: hand;
             """.trimIndent()
-            setOnMouseClicked { openDirPicker() }
         }
 
-        return VBox(0.0, sectionLabel, row).apply {
+        return VBox(row).apply {
             padding = Insets(16.0, 16.0, 16.0, 16.0)
         }
     }
@@ -409,6 +430,20 @@ class MergePhantomScreen : VBox() {
             -fx-font-weight: bold;
             -fx-text-fill: #111111;
             -fx-padding: 0 0 8 0;
+        """.trimIndent()
+    }
+
+    private fun buildTag(text: String, color: String) = Label(text).apply {
+        minWidth  = 100.0
+        maxWidth  = 100.0
+        minHeight = 44.0
+        alignment = Pos.CENTER
+        style = """
+            -fx-background-color: $color;
+            -fx-text-fill: white;
+            -fx-font-size: 12px;
+            -fx-font-weight: bold;
+            -fx-background-radius: 4 0 0 4;
         """.trimIndent()
     }
 
