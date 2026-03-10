@@ -34,6 +34,98 @@ class MergePhantomScreen : VBox() {
         STANDING_SUPINE("Standing beside\nSupine", "/assets/images/standing-supine.png", "standing_supine")
     }
 
+    // =========================================================================
+    // Validation
+    // =========================================================================
+    private fun validate(): Boolean {
+        var valid = true
+
+        // File 1
+        if (g4dcmFile1 == null) {
+            rowFile1.style = """
+                -fx-background-color: #ffeaea;
+                -fx-border-color: #cccccc;
+                -fx-border-width: 1;
+                -fx-border-radius: 4;
+                -fx-background-radius: 4;
+            """.trimIndent()
+            valid = false
+        } else {
+            rowFile1.style = """
+                -fx-background-color: white;
+                -fx-border-color: #cccccc;
+                -fx-border-width: 1;
+                -fx-border-radius: 4;
+                -fx-background-radius: 4;
+            """.trimIndent()
+        }
+
+        // File 2
+        if (g4dcmFile2 == null) {
+            rowFile2.style = """
+                -fx-background-color: #ffeaea;
+                -fx-border-color: #cccccc;
+                -fx-border-width: 1;
+                -fx-border-radius: 4;
+                -fx-background-radius: 4;
+            """.trimIndent()
+            valid = false
+        } else {
+            rowFile2.style = """
+                -fx-background-color: white;
+                -fx-border-color: #cccccc;
+                -fx-border-width: 1;
+                -fx-border-radius: 4;
+                -fx-background-radius: 4;
+            """.trimIndent()
+        }
+
+        // Separation
+        if (tfSep.text.trim().isEmpty() || tfSep.text.trim().toIntOrNull() == null) {
+            rowSep.style = """
+                -fx-background-color: #ffeaea;
+                -fx-border-color: #cccccc;
+                -fx-border-width: 1;
+                -fx-border-radius: 4;
+                -fx-background-radius: 4;
+            """.trimIndent()
+            valid = false
+        } else {
+            rowSep.style = """
+                -fx-background-color: white;
+                -fx-border-color: #cccccc;
+                -fx-border-width: 1;
+                -fx-border-radius: 4;
+                -fx-background-radius: 4;
+            """.trimIndent()
+        }
+
+        // Output directory
+        if (outputDirectory == null) {
+            rowOutput.style = """
+                -fx-background-color: #ffeaea;
+                -fx-border-color: #cccccc;
+                -fx-border-width: 1;
+                -fx-border-radius: 4;
+                -fx-background-radius: 4;
+                -fx-cursor: hand;
+            """.trimIndent()
+            valid = false
+        } else {
+            rowOutput.style = """
+                -fx-background-color: white;
+                -fx-border-color: #cccccc;
+                -fx-border-width: 1;
+                -fx-border-radius: 4;
+                -fx-background-radius: 4;
+                -fx-cursor: hand;
+            """.trimIndent()
+        }
+
+        btnOperate.isDisable = !valid
+        return valid
+    }
+
     private val uiScope = CoroutineScope(Dispatchers.JavaFx)
     private val pythonExecutor = PythonExecutor()
 
@@ -52,6 +144,12 @@ class MergePhantomScreen : VBox() {
     private val situationCards = mutableMapOf<Situation, VBox>()
 
     private lateinit var btnOperate: Button
+
+    // ── Row refs for validation highlight ─────────────────────────────────────
+    private lateinit var rowFile1: HBox
+    private lateinit var rowFile2: HBox
+    private lateinit var rowSep:   HBox
+    private lateinit var rowOutput: HBox
 
     private val logArea = TextArea().apply {
         isEditable = false
@@ -81,6 +179,7 @@ class MergePhantomScreen : VBox() {
         children.add(body)
 
         refreshSituationSelection()
+        validate()
     }
 
     // =========================================================================
@@ -93,15 +192,21 @@ class MergePhantomScreen : VBox() {
             buildSeparationSection(),
             buildOutputSection()
         ).apply {
-            style = "-fx-background-color: #f8f8f8;"
+            style   = "-fx-background-color: #f8f8f8;"
             maxWidth = Double.MAX_VALUE
+            padding  = Insets(0.0)
         }
 
         val scroll = ScrollPane(content).apply {
-            isFitToWidth   = true
-            hbarPolicy     = ScrollPane.ScrollBarPolicy.NEVER
-            vbarPolicy     = ScrollPane.ScrollBarPolicy.NEVER
-            style          = "-fx-background-color: transparent; -fx-background: transparent;"
+            isFitToWidth = true
+            hbarPolicy   = ScrollPane.ScrollBarPolicy.NEVER
+            vbarPolicy   = ScrollPane.ScrollBarPolicy.NEVER
+            style        = """
+                -fx-background-color: transparent;
+                -fx-background: transparent;
+                -fx-padding: 0;
+                -fx-border-width: 0;
+            """.trimIndent()
             VBox.setVgrow(this, Priority.ALWAYS)
         }
 
@@ -143,19 +248,19 @@ class MergePhantomScreen : VBox() {
     private fun buildPhantomSection(): VBox {
         val sectionLabel = buildSectionLabel("PHANTOM")
 
-        val row1 = buildFileRow(
+        rowFile1 = buildFileRow(
             tagText  = "G4CDM 1",
             tagColor = "#5a7a55",
             lblFile  = lblFile1
         ) { pickG4dcmFile(1) }
 
-        val row2 = buildFileRow(
+        rowFile2 = buildFileRow(
             tagText  = "G4CDM 2",
             tagColor = "#8b4513",
             lblFile  = lblFile2
         ) { pickG4dcmFile(2) }
 
-        return VBox(0.0, sectionLabel, row1, row2).apply {
+        return VBox(0.0, sectionLabel, rowFile1, rowFile2).apply {
             padding = Insets(16.0, 16.0, 0.0, 16.0)
         }
     }
@@ -349,7 +454,7 @@ class MergePhantomScreen : VBox() {
             HBox.setHgrow(this, Priority.ALWAYS)
         }
 
-        val row = HBox(tag, contentBox).apply {
+        rowSep = HBox(tag, contentBox).apply {
             alignment = Pos.CENTER_LEFT
             minHeight = 44.0
             style = """
@@ -361,7 +466,7 @@ class MergePhantomScreen : VBox() {
             """.trimIndent()
         }
 
-        return VBox(row).apply {
+        return VBox(rowSep).apply {
             padding = Insets(16.0, 16.0, 0.0, 16.0)
         }
     }
@@ -381,7 +486,7 @@ class MergePhantomScreen : VBox() {
             setOnMouseClicked { openDirPicker() }
         }
 
-        val row = HBox(tag, contentBox).apply {
+        rowOutput = HBox(tag, contentBox).apply {
             alignment = Pos.CENTER_LEFT
             minHeight = 44.0
             style = """
@@ -394,7 +499,7 @@ class MergePhantomScreen : VBox() {
             """.trimIndent()
         }
 
-        return VBox(row).apply {
+        return VBox(rowOutput).apply {
             padding = Insets(16.0, 16.0, 16.0, 16.0)
         }
     }
@@ -457,7 +562,12 @@ class MergePhantomScreen : VBox() {
             -fx-padding: 4 8;
         """.trimIndent()
         textProperty().addListener { _, old, new ->
-            if (new.isNotEmpty() && !new.matches(Regex("\\d+"))) text = old
+            if (new.isNotEmpty() && !new.matches(Regex("\\d+"))) {
+                text = old
+            } else {
+                // Trigger validation if rows already initialized
+                if (::rowSep.isInitialized && ::btnOperate.isInitialized) validate()
+            }
         }
     }
 
@@ -481,6 +591,7 @@ class MergePhantomScreen : VBox() {
             lblFile2.text  = file.absolutePath
             lblFile2.style = "-fx-font-size: 13px; -fx-text-fill: #222222;"
         }
+        validate()
     }
 
     private fun openDirPicker() {
@@ -490,30 +601,32 @@ class MergePhantomScreen : VBox() {
         outputDirectory = dir
         lblOutDir.text  = dir.absolutePath
         lblOutDir.style = "-fx-font-size: 13px; -fx-text-fill: #222222;"
+        validate()
     }
 
     // =========================================================================
     // OPERATE
     // =========================================================================
     private fun onOperate(btn: Button) {
+        validate()
         val f1    = g4dcmFile1
         val f2    = g4dcmFile2
         val sep   = tfSep.text.trim().toIntOrNull()
         val outDir = outputDirectory
 
-        if (f1 == null || f2 == null || sep == null || outDir == null) {
+        if (!validate()) {
             logArea.text = "[ERROR] Vui lòng điền đầy đủ tất cả các trường bắt buộc.\n"
             return
         }
 
         val scriptFile = RootUtils.path("mergePhantom.py")
-        val outputFile = File(outDir, "merged_output.g4dcm").absolutePath
+        val outputFile = File(outDir!!, "merged_output.g4dcm").absolutePath
 
         val args = listOf(
-            "--input1",    f1.absolutePath,
-            "--input2",    f2.absolutePath,
+            "--input1",    f1!!.absolutePath,
+            "--input2",    f2!!.absolutePath,
             "--situation", selectedSituation.argValue,
-            "--separation", sep.toString(),
+            "--separation", sep!!.toString(),
             "--output",    outputFile
         )
 

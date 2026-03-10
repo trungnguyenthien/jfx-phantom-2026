@@ -8,10 +8,16 @@
 #   ./gradlew shadowJar
 #       └─▶ build/libs/PhantomGUI-1.0-SNAPSHOT-all.jar   (Gradle output, tạm thời)
 #
-#   Script này sẽ:
-#       1. Chạy shadowJar để tạo JAR trong build/libs/
-#       2. Copy JAR + toàn bộ src/main/resources/root/ vào dist/
-#       3. dist/ là thư mục deploy cuối cùng — chạy JAR từ đây
+# Script này sẽ:
+#   1. Chạy shadowJar để tạo JAR trong build/libs/
+#   2. Copy JAR + toàn bộ src/main/resources/root/ vào dist/
+#   3. dist/ là thư mục deploy cuối cùng — chạy JAR từ đây
+#
+# Cross-platform:
+#   • JAR được build với JavaFX native libs cho CẢ 3 platform:
+#     macOS (intel + apple silicon), Windows, Linux
+#   • Chỉ cần build 1 lần trên macOS → JAR chạy được trên Windows và Ubuntu
+#   • Yêu cầu: Java 17+ được cài trên máy chạy
 #
 # Lưu ý:
 #   • build/libs/  → Gradle output directory, KHÔNG chỉnh sửa thủ công
@@ -20,7 +26,7 @@
 #
 # Output:
 #   dist/
-#     PhantomGUI-1.0-SNAPSHOT-all.jar   ← fat JAR (tất cả dependencies)
+#     PhantomGUI-1.0-SNAPSHOT-all.jar   ← fat JAR (cross-platform)
 #     data.json                          ← và toàn bộ file trong resources/root/
 # =============================================================================
 

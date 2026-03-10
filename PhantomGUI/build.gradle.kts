@@ -36,6 +36,7 @@ javafx {
 }
 
 dependencies {
+
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-javafx:1.8.0")
     implementation("org.controlsfx:controlsfx:11.2.1")

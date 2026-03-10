@@ -168,10 +168,12 @@ chmod +x buildFatJar.sh
 Output:
 ```
 dist/
-  PhantomGUI-1.0-SNAPSHOT-all.jar   ← fat JAR
+  PhantomGUI-1.0-SNAPSHOT-all.jar   ← fat JAR (cross-platform)
   buildPhantom.py                    ← Python script
   data.json                          ← Runtime data
 ```
+
+> **Cross-platform:** JAR được build với JavaFX native libs cho cả **macOS (Intel + Apple Silicon)**, **Windows** và **Linux** — chỉ cần build 1 lần trên macOS, JAR chạy được trên cả 3 OS. Yêu cầu **Java 17+** trên máy chạy.
 
 ### Cách thủ công — Gradle
 
