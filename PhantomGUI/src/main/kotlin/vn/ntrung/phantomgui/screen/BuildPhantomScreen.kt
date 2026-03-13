@@ -44,9 +44,9 @@ class BuildPhantomScreen : VBox() {
     }
 
     // ── Top form fields ───────────────────────────────────────────────────────
-    private val tfVoxelX = buildIntField()
-    private val tfVoxelY = buildIntField()
-    private val tfVoxelZ = buildIntField()
+    private val tfVoxelX = buildDecimalField()
+    private val tfVoxelY = buildDecimalField()
+    private val tfVoxelZ = buildDecimalField()
     private val lblOutputDir = Label("").apply {
         style = "-fx-font-size: 13px; -fx-text-fill: #555555;"
         isWrapText = true
@@ -251,8 +251,8 @@ class BuildPhantomScreen : VBox() {
         return grid
     }
 
-    // ── Helper: integer-only TextField ────────────────────────────────────────
-    private fun buildIntField() = TextField().apply {
+    // ── Helper: decimal TextField (positive numbers, e.g. 1.5) ───────────────
+    private fun buildDecimalField() = TextField().apply {
         style = """
             -fx-font-size: 13px;
             -fx-background-color: #f5f5f5;
@@ -262,7 +262,9 @@ class BuildPhantomScreen : VBox() {
             -fx-padding: 4 8;
         """.trimIndent()
         textProperty().addListener { _, old, new ->
-            if (new.isNotEmpty() && !new.matches(Regex("[1-9][0-9]*"))) text = old
+            if (new.isNotEmpty() && !new.matches(Regex("\\d*\\.?\\d*"))) text = old
+            // Không cho phép bắt đầu bằng dấu chấm
+            if (new == ".") text = old
         }
     }
 
@@ -303,9 +305,9 @@ class BuildPhantomScreen : VBox() {
 
         val args = listOf(
             "--csv", csvFile.absolutePath,
-            "--voxel_x", vx.toString(),
-            "--voxel_y", vy.toString(),
-            "--voxel_z", vz.toString(),
+            "--voxel_x", vx.toBigDecimal().toPlainString(),
+            "--voxel_y", vy.toBigDecimal().toPlainString(),
+            "--voxel_z", vz.toBigDecimal().toPlainString(),
             "--output", outputFile
         )
 
@@ -334,9 +336,9 @@ class BuildPhantomScreen : VBox() {
     }
 
     // ── Public accessors ──────────────────────────────────────────────────────
-    val voxelX: Int? get() = tfVoxelX.text.trim().toIntOrNull()
-    val voxelY: Int? get() = tfVoxelY.text.trim().toIntOrNull()
-    val voxelZ: Int? get() = tfVoxelZ.text.trim().toIntOrNull()
+    val voxelX: Double? get() = tfVoxelX.text.trim().toDoubleOrNull()?.takeIf { it > 0 }
+    val voxelY: Double? get() = tfVoxelY.text.trim().toDoubleOrNull()?.takeIf { it > 0 }
+    val voxelZ: Double? get() = tfVoxelZ.text.trim().toDoubleOrNull()?.takeIf { it > 0 }
 
     fun collectData(): List<Triple<String?, String?, Double?>> {
         return segmentList.children
