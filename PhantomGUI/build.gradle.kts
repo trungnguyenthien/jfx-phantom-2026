@@ -35,7 +35,21 @@ javafx {
     modules = listOf("javafx.controls", "javafx.fxml", "javafx.web", "javafx.swing", "javafx.media")
 }
 
+// Thêm JavaFX native libs cho tất cả platform vào shadowJar
+val javafxVersion = "17.0.14"
+val javafxModules = listOf("javafx-base", "javafx-controls", "javafx-fxml", "javafx-graphics", "javafx-media", "javafx-swing", "javafx-web")
+val javafxPlatforms = listOf("win", "linux", "mac", "mac-aarch64")
+
+configurations {
+    create("javafxNatives")
+}
+
 dependencies {
+    javafxPlatforms.forEach { platform ->
+        javafxModules.forEach { module ->
+            add("javafxNatives", "org.openjfx:$module:$javafxVersion:$platform")
+        }
+    }
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-javafx:1.8.0")
@@ -71,6 +85,9 @@ tasks.shadowJar {
             "Main-Class" to "vn.ntrung.phantomgui.LauncherKt"
         )
     }
+
+    // Bundle JavaFX native libraries cho tất cả platform
+    from(project.configurations.getByName("javafxNatives").map { f -> if (f.isDirectory) f else zipTree(f) })
 
     // Loại bỏ module-info để tránh conflict với fat JAR
     exclude("module-info.class")
