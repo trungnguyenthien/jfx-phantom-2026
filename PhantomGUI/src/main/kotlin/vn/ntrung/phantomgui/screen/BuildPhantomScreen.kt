@@ -7,6 +7,7 @@ import javafx.scene.control.Label
 import javafx.scene.control.ScrollPane
 import javafx.scene.control.TextArea
 import javafx.scene.control.TextField
+import javafx.scene.control.ToggleButton
 import javafx.scene.layout.ColumnConstraints
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.HBox
@@ -53,6 +54,8 @@ class BuildPhantomScreen : VBox() {
     }
     var outputDirectory: File? = null
         private set
+
+    private var writeStructure = true
 
     private val segmentList = VBox(12.0).apply {
         alignment = Pos.CENTER
@@ -195,6 +198,14 @@ class BuildPhantomScreen : VBox() {
             maxWidth = Double.MAX_VALUE
         }
 
+        // ── Structure Matrix ────────────────────────────────────────────────────
+        val structToggleBox = buildToggleRow("Structure Matrix", true) { writeStructure = it }.first
+
+        val structCard = VBox(buildLabeledRow("Structure Matrix", structToggleBox)).apply {
+            style = cardStyle
+            maxWidth = Double.MAX_VALUE
+        }
+
         // ── Output Directory ──────────────────────────────────────────────────
         lblOutputDir.style = "-fx-font-size: 13px; -fx-text-fill: #555555; -fx-cursor: hand;"
 
@@ -210,7 +221,7 @@ class BuildPhantomScreen : VBox() {
             maxWidth = Double.MAX_VALUE
         }
 
-        return VBox(10.0, voxelCard, dirCard).apply {
+        return VBox(10.0, voxelCard, structCard, dirCard).apply {
             alignment = Pos.CENTER
             padding = Insets(14.0, 10.0, 6.0, 10.0)
             style = "-fx-background-color: #f8f8f8;"
@@ -249,6 +260,94 @@ class BuildPhantomScreen : VBox() {
         grid.add(keyCell, 0, 0)
         grid.add(valueCell, 1, 0)
         return grid
+    }
+
+    // ── Helper: toggle YES / NO row (pill switch style) ────────────────────
+    private fun buildToggleRow(
+        labelText: String,
+        initialValue: Boolean,
+        onToggle: (Boolean) -> Unit
+    ): Pair<HBox, ToggleButton> {
+        var selected = initialValue
+
+        val btnYes = ToggleButton("YES")
+        val btnNo = ToggleButton("NO")
+
+        fun updateStyles() {
+            if (selected) {
+                btnYes.style = """
+                    -fx-font-size: 12px;
+                    -fx-font-weight: bold;
+                    -fx-text-fill: white;
+                    -fx-background-color: #922B21;
+                    -fx-background-radius: 14;
+                    -fx-cursor: hand;
+                    -fx-padding: 4 0;
+                    -fx-max-width: Infinity;
+                    -fx-pref-width: USE_PREF_SIZE;
+                """.trimIndent()
+                btnNo.style = """
+                    -fx-font-size: 12px;
+                    -fx-font-weight: bold;
+                    -fx-text-fill: #922B21;
+                    -fx-background-color: white;
+                    -fx-background-radius: 14;
+                    -fx-cursor: hand;
+                    -fx-padding: 4 0;
+                    -fx-max-width: Infinity;
+                    -fx-pref-width: USE_PREF_SIZE;
+                """.trimIndent()
+            } else {
+                btnYes.style = """
+                    -fx-font-size: 12px;
+                    -fx-font-weight: bold;
+                    -fx-text-fill: #922B21;
+                    -fx-background-color: white;
+                    -fx-background-radius: 14;
+                    -fx-cursor: hand;
+                    -fx-padding: 4 0;
+                    -fx-max-width: Infinity;
+                    -fx-pref-width: USE_PREF_SIZE;
+                """.trimIndent()
+                btnNo.style = """
+                    -fx-font-size: 12px;
+                    -fx-font-weight: bold;
+                    -fx-text-fill: white;
+                    -fx-background-color: #922B21;
+                    -fx-background-radius: 14;
+                    -fx-cursor: hand;
+                    -fx-padding: 4 0;
+                    -fx-max-width: Infinity;
+                    -fx-pref-width: USE_PREF_SIZE;
+                """.trimIndent()
+            }
+        }
+
+        val pillContainer = HBox(btnYes, btnNo).apply {
+            alignment = Pos.CENTER_LEFT
+            padding = Insets(2.0)
+            style = """
+                -fx-background-color: transparent;
+                -fx-background-radius: 16;
+            """.trimIndent()
+            HBox.setHgrow(btnYes, Priority.ALWAYS)
+            HBox.setHgrow(btnNo, Priority.ALWAYS)
+        }
+
+        btnYes.setOnAction {
+            selected = true
+            updateStyles()
+            onToggle(true)
+        }
+
+        btnNo.setOnAction {
+            selected = false
+            updateStyles()
+            onToggle(false)
+        }
+
+        updateStyles()
+        return Pair(pillContainer, btnYes)
     }
 
     // ── Helper: decimal TextField (positive numbers, e.g. 1.5) ───────────────
@@ -303,13 +402,14 @@ class BuildPhantomScreen : VBox() {
         val scriptFile = RootUtils.path("buildPhantom.py")
         val outputFile = File(outDir, "output.g4dcm").absolutePath
 
-        val args = listOf(
-            "--csv", csvFile.absolutePath,
-            "--voxel_x", vx.toBigDecimal().toPlainString(),
-            "--voxel_y", vy.toBigDecimal().toPlainString(),
-            "--voxel_z", vz.toBigDecimal().toPlainString(),
-            "--output", outputFile
-        )
+        val args = buildList {
+            add("--csv"); add(csvFile.absolutePath)
+            add("--voxel_x"); add(vx.toBigDecimal().toPlainString())
+            add("--voxel_y"); add(vy.toBigDecimal().toPlainString())
+            add("--voxel_z"); add(vz.toBigDecimal().toPlainString())
+            add("--output"); add(outputFile)
+            if (writeStructure) add("--write_structure")
+        }
 
         logArea.clear()
         logArea.appendText("[INFO] Đang chạy buildPhantom.py...\n")
