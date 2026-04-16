@@ -12,8 +12,18 @@ import java.io.InputStreamReader
  * @property pythonPath Đường dẫn đến trình thông dịch Python (VD: "python", "python3", hoặc path đến venv).
  */
 class PythonExecutor(
-    private val pythonPath: String = "python3" // Hoặc đường dẫn tuyệt đối tới venv/bin/python
+    private val pythonPath: String = resolveVenvPython()
 ) {
+    companion object {
+        /** Tìm python trong .venv — fallback về python3 nếu không có .venv */
+        private fun resolveVenvPython(): String {
+            val scriptDir = System.getProperty("user.dir")
+            val venvPython = java.io.File(scriptDir).parentFile?.let { parent ->
+                java.io.File(parent, ".venv/bin/python").takeIf { it.exists() }
+            }
+            return venvPython?.absolutePath ?: "python3"
+        }
+    }
 
     /**
      * Chạy một script Python và stream output (bao gồm cả stdout và stderr) về dưới dạng Flow.
@@ -31,10 +41,11 @@ class PythonExecutor(
         val processBuilder = ProcessBuilder(command)
         processBuilder.redirectErrorStream(true)
 
-        // Set working directory to the script's parent so relative paths inside the script resolve correctly
+        // Set working directory: parent of dist/ (project root) so .venv is found
         val scriptFile = java.io.File(scriptPath)
-        if (scriptFile.parentFile?.exists() == true) {
-            processBuilder.directory(scriptFile.parentFile)
+        val workDir = scriptFile.parentFile?.parentFile ?: scriptFile.parentFile
+        if (workDir?.exists() == true) {
+            processBuilder.directory(workDir)
         }
 
         var process: Process? = null
